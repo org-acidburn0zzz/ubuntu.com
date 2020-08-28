@@ -6,7 +6,6 @@ import json
 import math
 import os
 import re
-from datetime import datetime, timedelta, timezone
 
 # Packages
 import dateutil.parser
@@ -26,6 +25,10 @@ from requests.exceptions import HTTPError
 # Local
 from webapp.login import empty_session, user_info
 from webapp.advantage import AdvantageContracts
+
+
+# Define the metric name for the number of active machines.
+ALLOWANCE_METRIC_ACTIVE_MACHINES = "active-machines"
 
 
 ip_reader = geolite2.reader()
@@ -456,7 +459,10 @@ def advantage_view():
 
                     time_now = datetime.utcnow().replace(tzinfo=pytz.utc)
 
-                    if "0/" in contract["machineCount"]:
+                    # TODO(frankban): what is the logic below about?
+                    # Why do we do the same thing in both branches of the
+                    # condition?
+                    if not contract["machineCount"].attached:
                         if not new_subscription_start_date:
                             new_subscription_start_date = created_at
                             new_subscription_id = contract["contractInfo"][
